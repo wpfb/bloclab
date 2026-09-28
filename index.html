@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BLOC LAB — Scorecard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EDEAE1;
+    --paper-line:#d9d4c6;
+    --ink:#221F1D;
+    --chalk:#FAFAF7;
+    --risk:#5B8C3D;
+    --intensity:#D9542D;
+    --complexity:#2F6FA3;
+    --maroon:#7A2E38;
+    --muted:#8b8577;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'IBM Plex Sans',sans-serif;
+    color:var(--ink);
+    background-color:var(--paper);
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size:28px 28px;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:32px 16px 80px;
+  }
+  .card{
+    width:100%;
+    max-width:520px;
+    background:var(--chalk);
+    border:2px solid var(--ink);
+    box-shadow:6px 6px 0 var(--ink);
+    padding:28px 24px 24px;
+    position:relative;
+  }
+  .brand{
+    text-align:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    letter-spacing:0.35em;
+    font-size:12px;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .brand::before{ content:"fit "; }
+  .brand::after{ content:" bloc"; }
+  h1{
+    font-family:'Anton',sans-serif;
+    font-weight:400;
+    font-size:56px;
+    line-height:0.85;
+    text-align:center;
+    letter-spacing:0.01em;
+    margin:8px 0 4px;
+    text-transform:uppercase;
+  }
+  h1 span{ display:block; }
+  h1 .lab{ color:var(--maroon); }
+  .event-tag{
+    text-align:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:12px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--chalk);
+    background:var(--maroon);
+    display:table;
+    margin:8px auto 0;
+    padding:4px 12px;
+    transform:rotate(-2deg);
+  }
+  .badges{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    margin:14px 0 20px;
+    flex-wrap:wrap;
+  }
+  .badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    font-weight:600;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    padding:5px 10px;
+    border-radius:3px;
+    color:var(--chalk);
+    text-align:center;
+  }
+  .badge.period{ background:#2F4C6B; }
+  .badge.deadline{ background:var(--maroon); }
+  .badge b{ display:block; font-size:12.5px; margin-top:1px; }
+
+  .intro{
+    font-size:13.5px;
+    line-height:1.5;
+    text-align:center;
+    color:#4a463f;
+    margin:0 0 20px;
+  }
+  .intro b{ color:var(--ink); }
+
+  fieldset{
+    border:none;
+    padding:0;
+    margin:0 0 18px;
+    display:flex;
+    gap:12px;
+  }
+  .field{ flex:1; display:flex; flex-direction:column; gap:4px; }
+  label.field-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--muted);
+  }
+  input[type="text"], input[type="tel"]{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:15px;
+    padding:9px 10px;
+    border:1.5px solid var(--ink);
+    background:var(--paper);
+    color:var(--ink);
+  }
+  input[type="text"]:focus, input[type="tel"]:focus{
+    outline:2px solid var(--maroon);
+    outline-offset:1px;
+  }
+
+  .section-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--muted);
+    border-bottom:1.5px dashed var(--paper-line);
+    padding-bottom:6px;
+    margin:0 0 8px;
+  }
+
+  .group{ margin-bottom:16px; }
+  .group-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:6px;
+  }
+  .group-name{
+    font-weight:700;
+    font-size:14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .dot{
+    width:11px; height:11px; border-radius:50%;
+    display:inline-block;
+    flex-shrink:0;
+  }
+  .dot.risk{ background:var(--risk); }
+  .dot.intensity{ background:var(--intensity); }
+  .dot.complexity{ background:var(--complexity); }
+
+  .charm{
+    width:26px; height:26px;
+    border-radius:50%;
+    border:2px solid var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px;
+    background:#e5e1d6;
+    filter:grayscale(1);
+    opacity:0.55;
+    transition:filter 0.4s ease, opacity 0.4s ease, transform 0.3s ease;
+  }
+  .charm.unlocked{
+    filter:grayscale(0);
+    opacity:1;
+    transform:scale(1.12) rotate(-6deg);
+  }
+  .charm.risk.unlocked{ background:#dff0d6; border-color:var(--risk); }
+  .charm.intensity.unlocked{ background:#fbe0d2; border-color:var(--intensity); }
+  .charm.complexity.unlocked{ background:#d9e7f2; border-color:var(--complexity); }
+
+  .routes{ display:flex; flex-direction:column; gap:6px; }
+  .route{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:8px 10px;
+    border:1.5px solid var(--paper-line);
+    background:var(--paper);
+    cursor:pointer;
+    user-select:none;
+    transition:border-color 0.2s ease, background 0.2s ease;
+  }
+  .route:hover{ border-color:var(--ink); }
+  .route.checked{
+    background:#fff;
+    border-color:var(--ink);
+  }
+  .route input[type="checkbox"]{
+    -webkit-appearance:none;
+    appearance:none;
+    width:22px; height:22px;
+    min-width:22px;
+    border:2px solid var(--ink);
+    border-radius:50%;
+    position:relative;
+    cursor:pointer;
+    background:var(--chalk);
+    transition:transform 0.15s ease;
+  }
+  .route input[type="checkbox"]:checked{
+    background:
+      radial-gradient(circle at 35% 30%, rgba(255,255,255,0.5), transparent 40%),
+      var(--ink);
+  }
+  .route input[type="checkbox"]:checked::after{
+    content:"";
+    position:absolute;
+    left:6px; top:2px;
+    width:6px; height:11px;
+    border:solid var(--chalk);
+    border-width:0 2px 2px 0;
+    transform:rotate(40deg);
+  }
+  .route-code{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:14px;
+    width:40px;
+  }
+  .route-name{ font-size:13.5px; color:#4a463f; }
+
+  .submit-row{ margin-top:22px; }
+  button#submitBtn{
+    width:100%;
+    padding:14px;
+    background:var(--ink);
+    color:var(--chalk);
+    border:none;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:14px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    cursor:pointer;
+    transition:background 0.2s ease, transform 0.1s ease;
+  }
+  button#submitBtn:hover{ background:var(--maroon); }
+  button#submitBtn:active{ transform:translateY(1px); }
+  button#submitBtn:disabled{ background:#a8a290; cursor:not-allowed; }
+
+  .status{
+    margin-top:12px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    text-align:center;
+    min-height:18px;
+  }
+  .status.ok{ color:var(--risk); }
+  .status.err{ color:var(--maroon); }
+
+  .footnote{
+    margin-top:18px;
+    font-size:11px;
+    line-height:1.5;
+    color:var(--muted);
+    border-top:1.5px dashed var(--paper-line);
+    padding-top:12px;
+  }
+
+  .bonus{
+    margin-top:14px;
+    padding:10px 12px;
+    background:#f3ede2;
+    border:1.5px dashed var(--maroon);
+    font-size:12px;
+    line-height:1.5;
+  }
+  .bonus b{ color:var(--maroon); }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="brand">bloc</div>
+  <h1><span>Bloc</span><span class="lab">Lab</span></h1>
+  <div class="event-tag" id="eventTag"></div>
+
+  <div class="badges">
+    <div class="badge period">Test Period<b id="periodDates">26 Aug – 15 Sep</b></div>
+    <div class="badge deadline">Report Deadline<b id="deadlineDate">15 Sep</b></div>
+  </div>
+
+  <p class="intro">Check off every route you've sent. Complete all <b>3 routes in a category</b> to unlock that charm. Bring your name up at the front desk any time to redeem.</p>
+
+  <fieldset>
+    <div class="field">
+      <label class="field-label" for="name">Name</label>
+      <input type="text" id="name" placeholder="Full name" required>
+    </div>
+    <div class="field">
+      <label class="field-label" for="phone">Phone #</label>
+      <input type="tel" id="phone" placeholder="Mobile number" required>
+    </div>
+  </fieldset>
+
+  <div class="group" data-group="risk">
+    <div class="group-head">
+      <div class="group-name"><span class="dot risk"></span>Risk</div>
+      <div class="charm risk" id="charm-risk">🌱</div>
+    </div>
+    <div class="routes">
+      <label class="route"><input type="checkbox" data-route="R-1"><span class="route-code">R-1</span><span class="route-name">Risk</span></label>
+      <label class="route"><input type="checkbox" data-route="R-2"><span class="route-code">R-2</span><span class="route-name">Risk</span></label>
+      <label class="route"><input type="checkbox" data-route="R-3"><span class="route-code">R-3</span><span class="route-name">Risk</span></label>
+    </div>
+  </div>
+
+  <div class="group" data-group="intensity">
+    <div class="group-head">
+      <div class="group-name"><span class="dot intensity"></span>Intensity</div>
+      <div class="charm intensity" id="charm-intensity">⚡</div>
+    </div>
+    <div class="routes">
+      <label class="route"><input type="checkbox" data-route="I-1"><span class="route-code">I-1</span><span class="route-name">Intensity</span></label>
+      <label class="route"><input type="checkbox" data-route="I-2"><span class="route-code">I-2</span><span class="route-name">Intensity</span></label>
+      <label class="route"><input type="checkbox" data-route="I-3"><span class="route-code">I-3</span><span class="route-name">Intensity</span></label>
+    </div>
+  </div>
+
+  <div class="group" data-group="complexity">
+    <div class="group-head">
+      <div class="group-name"><span class="dot complexity"></span>Complexity</div>
+      <div class="charm complexity" id="charm-complexity">⚙️</div>
+    </div>
+    <div class="routes">
+      <label class="route"><input type="checkbox" data-route="C-1"><span class="route-code">C-1</span><span class="route-name">Complexity</span></label>
+      <label class="route"><input type="checkbox" data-route="C-2"><span class="route-code">C-2</span><span class="route-name">Complexity</span></label>
+      <label class="route"><input type="checkbox" data-route="C-3"><span class="route-code">C-3</span><span class="route-name">Complexity</span></label>
+    </div>
+  </div>
+
+  <div class="bonus">
+    <b>Bonus:</b> Post your BlocLab climbs on Instagram and tag @fitbloc to unlock a bonus fit·bloc charm. Show the post to our crew at the desk to redeem — this one's checked in person, not here.
+  </div>
+
+  <div class="submit-row">
+    <button id="submitBtn">Submit my scorecard</button>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="footnote">
+    Redemption is limited to 1 BlocLab Shaker Keychain and 1 of each charm per customer. Your phone number identifies your entry. Enter the same number again to load your saved routes and change them; unchecking a route removes it.
+  </div>
+</div>
+
+<script>
+  // ---- CONFIGURE THIS ----
+  const SCRIPT_URL = "PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
+
+  // One entry per event. The key is what goes in the link (?event=4bar).
+  // The same keys must exist in the Apps Script (it decides which tab each event writes to).
+  const EVENTS = {
+    "4bar": { label: "Test 2: 4 Bars", period: "26 Aug – 15 Sep", deadline: "15 Sep" },
+    "5bar": { label: "Test 3: 5 Bars", period: "TBC",             deadline: "TBC"    }
+  };
+  // ------------------------
+
+  const configured = !SCRIPT_URL.includes("PASTE_YOUR_GOOGLE_APPS_SCRIPT");
+  // While no sheet is connected nothing is sent anywhere, so fall back to the first event to allow previewing.
+  // Once SCRIPT_URL is set, a missing or unknown event disables the form again.
+  const eventKey = new URLSearchParams(location.search).get("event") || (configured ? null : Object.keys(EVENTS)[0]);
+  const ev = EVENTS[eventKey];
+
+  const statusEl = document.getElementById("status");
+  const submitBtn = document.getElementById("submitBtn");
+  const nameEl = document.getElementById("name");
+  const phoneEl = document.getElementById("phone");
+  const boxes = document.querySelectorAll('input[type="checkbox"][data-route]');
+  const groups = { risk:["R-1","R-2","R-3"], intensity:["I-1","I-2","I-3"], complexity:["C-1","C-2","C-3"] };
+
+  function say(msg, cls){ statusEl.textContent = msg; statusEl.className = "status " + (cls || ""); }
+  const digits = v => String(v).replace(/\D/g, "");
+
+  function updateCharms(){
+    Object.entries(groups).forEach(([g, codes]) => {
+      const all = codes.every(c => document.querySelector(`input[data-route="${c}"]`).checked);
+      document.getElementById("charm-" + g).classList.toggle("unlocked", all);
+    });
+  }
+  function refreshRow(cb){ cb.closest(".route").classList.toggle("checked", cb.checked); }
+  boxes.forEach(cb => cb.addEventListener("change", () => { refreshRow(cb); updateCharms(); }));
+
+  if (!ev) {
+    // Never fall back to a default event: that would write scores to the wrong sheet.
+    [nameEl, phoneEl, submitBtn, ...boxes].forEach(el => el.disabled = true);
+    document.getElementById("eventTag").style.display = "none";
+    say("This link is missing its event. Scan the QR code at the gym again.", "err");
+  } else {
+    document.title = "BLOC LAB — " + ev.label;
+    document.getElementById("eventTag").textContent = ev.label;
+    document.getElementById("periodDates").textContent = ev.period;
+    document.getElementById("deadlineDate").textContent = ev.deadline;
+  }
+
+  // Load a saved entry when the phone number is entered
+  phoneEl.addEventListener("change", async () => {
+    const phone = digits(phoneEl.value);
+    if (!ev || !configured || phone.length < 8) return;
+    say("Checking for a saved entry…");
+    try {
+      const res = await fetch(`${SCRIPT_URL}?event=${encodeURIComponent(eventKey)}&phone=${phone}`);
+      const data = await res.json();
+      if (data.found) {
+        boxes.forEach(cb => { cb.checked = !!data.routes[cb.dataset.route]; refreshRow(cb); });
+        updateCharms();
+        say("Saved entry loaded. Changes only count once you submit.", "ok");
+      } else {
+        say("No saved entry for this number yet.");
+      }
+    } catch (e) {
+      say("Couldn't check for a saved entry. You can still submit.", "err");
+    }
+  });
+
+  submitBtn.addEventListener("click", async () => {
+    const name = nameEl.value.trim();
+    const phone = digits(phoneEl.value);
+    if (!name || phone.length < 8) { say("Enter your name and a valid phone number first.", "err"); return; }
+
+    const routes = {};
+    boxes.forEach(cb => routes[cb.dataset.route] = cb.checked);
+    const payload = { event: eventKey, name, phone, routes };
+
+    if (!configured) { console.log("Would send:", payload); say("Not connected to a sheet yet — see setup instructions.", "err"); return; }
+
+    submitBtn.disabled = true;
+    say("Submitting…");
+    try {
+      // text/plain avoids a CORS preflight, which Apps Script can't answer
+      const res = await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(payload) });
+      const data = await res.json();
+      if (data.status === "ok") say(data.action === "updated" ? "Entry updated. See you at the front desk!" : "Entry saved. See you at the front desk!", "ok");
+      else say("Not saved: " + (data.message || "unknown error"), "err");
+    } catch (e) {
+      say("Couldn't confirm the save. Reload with your phone number to check.", "err");
+    } finally { submitBtn.disabled = false; }
+  });
+</script>
+
+</body>
+</html>
